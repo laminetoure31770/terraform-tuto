@@ -12,8 +12,6 @@ provider "docker" {
    host = "unix:///var/run/docker.sock"
 }
 
-provider "docker" {}
-
 resource "docker_network" "bigagi_network" {
   name = "bigagi_network"
 }
