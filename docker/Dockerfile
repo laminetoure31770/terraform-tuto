@@ -7,9 +7,11 @@ FROM base AS deps
 
 # Installer git
 RUN apk add --no-cache git
-RUN git clone --branch v2-dev https://github.com/enricoros/big-AGI.git .
-
 WORKDIR /app
+
+RUN git clone https://github.com/enricoros/big-AGI.git .
+
+
 
 # Dependency files
 
