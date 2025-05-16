@@ -20,6 +20,7 @@ terraform-big-agi/
 │   ├── app.config.ts
 │   └── data.ts
 ├── docker/
+│   └── docker-compose       # docker-compose de Big-AGI (copié depuis GitHub)
 │   └── Dockerfile       # Dockerfile de Big-AGI (copié depuis GitHub)
 
 ````
