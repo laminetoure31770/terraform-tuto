@@ -6,14 +6,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 FROM base AS deps
 
 # Installer git
-RUN apt-get update && apt-get install -y git
+RUN apk add --no-cache git
+RUN git clone --branch v2-dev https://github.com/enricoros/big-AGI.git .
 
 WORKDIR /app
 
 # Dependency files
-RUN git clone --branch v2-dev https://github.com/enricoros/big-AGI.git .
-COPY big-AGI/package*.json ./
-COPY big-AGI/src/server/prisma ./src/server/prisma
+
+COPY package*.json ./
+COPY src/server/prisma ./src/server/prisma
 
 # link ssl3 for latest Alpine
 RUN sh -c '[ ! -e /lib/libssl.so.3 ] && ln -s /usr/lib/libssl.so.3 /lib/libssl.so.3 || echo "Link already exists"'
