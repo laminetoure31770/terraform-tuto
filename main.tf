@@ -8,10 +8,8 @@ terraform {
   required_version = ">= 1.3.0"
 }
 
-provider "docker" "this" {
-  config {
+provider "docker" {
    host = "unix:///var/run/docker.sock"
-  }
 }
 
 module "network" {
@@ -22,7 +20,7 @@ module "network" {
 module "postgres" {
   source = "./modules/postgres"
   providers = {
-    docker  = provider.docker.this
+    docker  = docker
   }
   network_name = module.network.network_name
   db_user     = var.db_user
@@ -33,7 +31,7 @@ module "postgres" {
 module "bigagi" {
   source = "./modules/bigagi"
   providers = {
-    docker  = provider.docker.this
+    docker  = docker
   }
   network_name    = module.network.network_name
   db_user         = var.db_user
