@@ -19,6 +19,7 @@ module "network" {
 
 module "postgres" {
   source = "./modules/postgres"
+  provider = docker
   network_name = module.network.network_name
   db_user     = var.db_user
   db_password = var.db_password
@@ -27,6 +28,7 @@ module "postgres" {
 
 module "bigagi" {
   source = "./modules/bigagi"
+  provider = docker
   network_name    = module.network.network_name
   db_user         = var.db_user
   db_password     = var.db_password
