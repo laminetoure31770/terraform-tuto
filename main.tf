@@ -9,7 +9,9 @@ terraform {
 }
 
 provider "docker" "this" {
+  config {
    host = "unix:///var/run/docker.sock"
+  }
 }
 
 module "network" {
