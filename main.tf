@@ -34,24 +34,6 @@ module "browserless" {
   log_dir      = var.log_dir
 }
 
-module "grafana" {
-  source       = "./modules/grafana"
-  network_name = module.network.network_name
-  log_dir      = var.log_dir
-}
-
-module "prometheus" {
-  source       = "./modules/prometheus"
-  network_name = module.network.network_name
-  log_dir      = var.log_dir
-}
-
-module "elasticsearch" {
-  source       = "./modules/elasticsearch"
-  network_name = module.network.network_name
-  log_dir      = var.log_dir
-}
-
 module "auth" {
   source       = "./modules/authjs-adapter"
   network_name = module.network.network_name
@@ -69,14 +51,3 @@ module "postgresql" {
   db_password      = var.db_password
 }
 
-module "local_deployment" {
-  source = "./modules/local"
-  count  = var.deploy_target == "local" ? 1 : 0
-  # autres variables nécessaires
-}
-
-module "render_deployment" {
-  source = "./modules/render"
-  count  = var.deploy_target == "render" ? 1 : 0
-  # autres variables nécessaires
-}
