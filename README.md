@@ -1,92 +1,114 @@
+### 📄 `README.md`
 
-# Big-AGI Modular Terraform Infrastructure
-Demo Terraform Big AGI
+```markdown
+# 🚀 Tuto Terraform Local Big-AGI + Grafana
 
-## 🚀 Services Déployés
+Ce projet Terraform déploie automatiquement :
 
-- Big-AGI (https://github.com/enricoros/big-AGI)
-- Auth.js Adapter (OAuth via Google, GitHub, Facebook, Email)
-- Browserless (headless Chrome)
-- Grafana (monitoring)
-- Prometheus (metrics)
-- Elasticsearch (logs)
-- NGINX Reverse Proxy (avec HTTPS + page d’accueil personnalisée)
+- Un conteneur personnalisé à partir du projet [big-AGI](https://github.com/enricoros/big-AGI)
+- Un conteneur Grafana pour l'observation
+- Un réseau Docker dédié pour interconnecter les services
 
-## 🔧 Déploiement
+## 📁 Structure du projet
 
-1. Installe Terraform et Docker
-2. Remplis `terraform.tfvars` avec tes clés/ID
-3. Lance :
+terraform-big-agi/
+├── main.tf              # Déploiement des conteneurs
+├── variables.tf         # Définition des variables
+├── terraform.tfvars     # Valeurs par défaut
+├── outputs.tf           # Résumé des IPs et ports
+├── files/               # Fichiers personnalisés pour l'agent
+│   ├── app.config.ts
+│   └── data.ts
+├── docker/
+│   └── Dockerfile       # Dockerfile de Big-AGI (copié depuis GitHub)
+
+````
+
+## ✅ Prérequis
+
+- [Docker](https://www.docker.com/)
+- [Terraform](https://developer.hashicorp.com/terraform/downloads)
+- Accès à internet pour cloner les fichiers ou copier le Dockerfile depuis GitHub
+
+## ⚙️ Installation
+
 ```bash
 terraform init
 terraform apply
+````
+
+Les variables par défaut peuvent être modifiées dans `terraform.tfvars` :
+
+```hcl
+image_name     = "bigagi-custom"
+container_name = "terraforme-agent"
+app_name       = "Terraforme Agent"
+network_name   = "bigagi_network"  # Nom du réseau Docker
 ```
 
-4. Accède à :
-- `https://localhost/` → Accueil
-- `https://localhost/app` → Big-AGI
-- `https://localhost/grafana` → Grafana
-- `https://localhost/prometheus` → Prometheus
+## 🛠️ Personnalisation de l'agent
 
-## 🔐 Authentification
+Modifie les fichiers dans `files/` :
 
-- Gérée par Auth.js Adapter containerisé
-- Compatible OAuth + Email
+* `app.config.ts` : configuration générale de l'application
+* `data.ts` : nom de l'agent, objectifs, etc.
 
-# 🔐 HTTPS avec certificat autosigné
+Ces fichiers sont montés automatiquement dans le conteneur.
 
-Pour la démo, HTTPS fonctionne avec un **certificat autosigné**. Les navigateurs afficheront un avertissement de sécurité que vous pouvez ignorer.
+## 🔗 Accès aux services
 
-## 📜 Générer un certificat autosigné
+| Service     | URL                                            |
+| ----------- | ---------------------------------------------- |
+| Big-AGI App | [http://localhost:3000](http://localhost:3000) |
+| Grafana     | [http://localhost:3001](http://localhost:3001) |
 
-Depuis le dossier `modules/nginx-reverse-proxy`, exécutez :
+⚠️ Le port de Grafana est **3001** pour éviter les conflits avec Big-AGI.
+
+## 🧩 Gestion du réseau Docker existant
+
+Par défaut, le réseau `bigagi_network` est créé.
+Si ce réseau **existe déjà**, Terraform échouera.
+
+### ✅ Solution recommandée
+
+Dans `terraform.tfvars`, spécifie le nom d’un réseau Docker existant :
+
+```hcl
+network_name = "ton_reseau_existants"
+```
+
+### 🧼 Ou supprime le réseau existant manuellement :
 
 ```bash
-mkdir -p certs
-openssl req -x509 -newkey rsa:4096 -keyout certs/selfsigned.key -out certs/selfsigned.crt -days 365 -nodes -subj "/CN=localhost"
+docker network rm bigagi_network
+```
+## 📤 Résultat de `terraform apply`
+
+```bash
+bigagi_container_name = "terraforme-agent"
+bigagi_container_ip   = "172.18.0.2"
+bigagi_app_port       = 3000
+
+grafana_container_name = "grafana"
+grafana_container_ip   = "172.18.0.3"
+grafana_port           = 3001
 ```
 
-## 📁 Structure des fichiers NGINX
+## 🧹 Nettoyage
 
-```
-modules/nginx-reverse-proxy/
-├── certs/
-│   ├── selfsigned.crt
-│   └── selfsigned.key
-├── html/
-│   └── index.html
-├── nginx.conf
-├── Dockerfile
-└── main.tf
+Pour supprimer tout :
+
+```bash
+terraform destroy
 ```
 
-## 🌐 Accès sécurisé
+## ✨ À venir (optionnel)
 
-Après `terraform apply`, accédez à :
+* Dashboard Grafana préconfiguré
+* Export de métriques via Prometheus
+* Authentification Big-AGI avec proxy inverse
 
-- `https://localhost/` → page d’accueil
-- `https://localhost/app/` → interface Big-AGI
+## 📄 Licence
 
-Vous devrez **accepter l’exception de sécurité** du navigateur pour continuer.
-
-## 🔑 Passer en Let's Encrypt (optionnel)
-
-Si vous disposez d’un domaine pointant vers votre machine :
-
-1. Modifiez `nginx.conf` pour utiliser Certbot (voir exemple)
-2. Montez `/etc/letsencrypt` dans NGINX
-3. Utilisez l’image `certbot/certbot` pour générer un certificat réel
-
-
-## 🛢️ Base de Données PostgreSQL
-
-Un conteneur PostgreSQL est déployé pour Big-AGI :
-
-- Port : `5432`
-- DB : `bigagi`
-- User : `bigagi`
-- Password : (défini dans `terraform.tfvars`)
-
-**Connexion interne :**
-
-Big-AGI peut se connecter via l'alias `postgres:5432` sur le réseau Docker.
+Basé sur [Big-AGI (MIT)](https://github.com/enricoros/big-AGI/blob/main/LICENSE)
+Infrastructure : libre utilisation sous [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
