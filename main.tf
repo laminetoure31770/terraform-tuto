@@ -26,7 +26,7 @@ resource "docker_image" "bigagi_image" {
 
 resource "docker_container" "bigagi_container" {
   name  = var.container_name
-  image = docker_image.bigagi_image.latest
+  image = docker_image.bigagi_image.id
   networks_advanced {
     name = docker_network.bigagi_network.name
   }
