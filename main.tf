@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     docker = {
-      source  = "registry.terraform.io/kreuzwerker/docker"
+      source  = "kreuzwerker/docker"
       version = "3.5.0"
     }
   }
@@ -19,8 +19,11 @@ module "network" {
 
 module "postgres" {
   source = "./modules/postgres"
-  providers = {
-    docker  = docker
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "3.5.0"
+    }
   }
   network_name = module.network.network_name
   db_user     = var.db_user
@@ -30,8 +33,11 @@ module "postgres" {
 
 module "bigagi" {
   source = "./modules/bigagi"
-  providers = {
-    docker  = docker
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "3.5.0"
+    }
   }
   network_name    = module.network.network_name
   db_user         = var.db_user
