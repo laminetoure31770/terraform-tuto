@@ -1,5 +1,5 @@
 
-openai_api_key = "your-openai-key"
+openai_api_key = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 nextauth_secret = "your-random-nextauth-secret"
 github_id = "your-github-client-id"
 github_secret = "your-github-client-secret"
@@ -9,3 +9,4 @@ facebook_id = "your-facebook-client-id"
 facebook_secret = "your-facebook-client-secret"
 
 db_password = "changeme123"
+log_dir = "/var/log/docker-apps"

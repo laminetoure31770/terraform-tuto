@@ -68,3 +68,15 @@ module "postgresql" {
   network_name     = module.network.network_name
   db_password      = var.db_password
 }
+
+module "local_deployment" {
+  source = "./modules/local"
+  count  = var.deploy_target == "local" ? 1 : 0
+  # autres variables nécessaires
+}
+
+module "render_deployment" {
+  source = "./modules/render"
+  count  = var.deploy_target == "render" ? 1 : 0
+  # autres variables nécessaires
+}

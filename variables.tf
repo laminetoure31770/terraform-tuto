@@ -45,3 +45,9 @@ variable "db_password" {
   type = string
   sensitive = true
 }
+
+variable "deploy_target" {
+  description = "Déploiement cible : 'local' ou 'render'"
+  type        = string
+  default     = "local"
+}
