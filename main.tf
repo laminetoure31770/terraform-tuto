@@ -1,53 +1,69 @@
-
 terraform {
   required_providers {
     docker = {
       source  = "kreuzwerker/docker"
-      version = "~> 3.0"
+      version = "~> 3.0.2"
     }
   }
 }
 
 provider "docker" {}
 
-module "network" {
-  source = "./modules/docker_network"
+# Réseau Docker dédié
+resource "docker_network" "bigagi_net" {
+  name = "bigagi_network"
 }
 
-module "bigagi" {
-  source         = "./modules/bigagi"
-  network_name   = module.network.network_name
-  openai_api_key = var.openai_api_key
-  log_dir        = var.log_dir
-  nextauth_secret = var.nextauth_secret
-  github_id     = var.github_id
-  github_secret = var.github_secret
-  google_id     = var.google_id
-  google_secret = var.google_secret
-  facebook_id   = var.facebook_id
-  facebook_secret = var.facebook_secret
+# Conteneur PostgreSQL
+resource "docker_image" "postgres" {
+  name = "postgres:14"
+  keep_locally = false
 }
 
-module "browserless" {
-  source       = "./modules/browserless"
-  network_name = module.network.network_name
-  log_dir      = var.log_dir
+resource "docker_container" "postgres" {
+  name  = "bigagi-postgres"
+  image = docker_image.postgres.latest
+  networks_advanced {
+    name = docker_network.bigagi_net.name
+  }
+
+  env = [
+    "POSTGRES_USER=bigagi",
+    "POSTGRES_PASSWORD=supersecret",
+    "POSTGRES_DB=bigagidb"
+  ]
+
+  ports {
+    internal = 5432
+    external = 5432
+  }
 }
 
-module "auth" {
-  source       = "./modules/authjs-adapter"
-  network_name = module.network.network_name
-  log_dir      = var.log_dir
+# Conteneur big-AGI depuis l'image officielle
+resource "docker_image" "bigagi" {
+  name = "ghcr.io/enricoros/big-agi:latest"
 }
 
-module "proxy" {
-  source       = "./modules/nginx-reverse-proxy"
-  network_name = module.network.network_name
-}
+resource "docker_container" "bigagi" {
+  name  = "bigagi-app"
+  image = docker_image.bigagi.latest
+  networks_advanced {
+    name = docker_network.bigagi_net.name
+  }
 
-module "postgresql" {
-  source           = "./modules/postgresql"
-  network_name     = module.network.network_name
-  db_password      = var.db_password
-}
+  ports {
+    internal = 3000
+    external = 3000
+  }
 
+  # Exemple d'env pour se connecter à PostgreSQL (si big-AGI les utilise)
+  env = [
+    "DATABASE_HOST=bigagi-postgres",
+    "DATABASE_PORT=5432",
+    "DATABASE_USER=bigagi",
+    "DATABASE_PASSWORD=supersecret",
+    "DATABASE_NAME=bigagidb"
+  ]
+
+  depends_on = [docker_container.postgres]
+}
