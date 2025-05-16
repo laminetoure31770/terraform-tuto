@@ -12,38 +12,53 @@ provider "docker" {
    host = "unix:///var/run/docker.sock"
 }
 
-module "network" {
-  source = "./modules/network"
-  network_name = "bigagi_network"
+provider "docker" {}
+
+resource "docker_network" "bigagi_network" {
+  name = "bigagi_network"
 }
 
-module "postgres" {
-  source = "./modules/postgres"
-  required_providers {
-    docker = {
-      source  = "kreuzwerker/docker"
-      version = "3.5.0"
-    }
+resource "docker_image" "bigagi_image" {
+  name         = "${var.image_name}"
+  build {
+    context    = "${path.module}/docker"
+    dockerfile = "${path.module}/docker/Dockerfile"
   }
-  network_name = module.network.network_name
-  db_user     = var.db_user
-  db_password = var.db_password
-  db_name     = var.db_name
 }
 
-module "bigagi" {
-  source = "./modules/bigagi"
-  required_providers {
-    docker = {
-      source  = "kreuzwerker/docker"
-      version = "3.5.0"
-    }
+resource "docker_container" "bigagi_container" {
+  name  = var.container_name
+  image = docker_image.bigagi_image.latest
+  networks_advanced {
+    name = docker_network.bigagi_network.name
   }
-  network_name    = module.network.network_name
-  db_user         = var.db_user
-  db_password     = var.db_password
-  db_name         = var.db_name
-  db_host         = module.postgres.container_name
-  app_port        = 3000
-  dockerfile_path = "${path.module}/Dockerfile"
+  mounts {
+    target = "/app/src/data.ts"
+    source = "${path.module}/files/data.ts"
+    type   = "bind"
+  }
+  mounts {
+    target = "/app/src/common/app.config.ts"
+    source = "${path.module}/files/app.config.ts"
+    type   = "bind"
+  }
+  env = [
+    "APP_NAME=${var.app_name}"
+  ]
+  ports {
+    internal = 3000
+    external = 3000
+  }
+}
+
+resource "docker_container" "grafana" {
+  name  = "grafana"
+  image = "grafana/grafana-oss"
+  networks_advanced {
+    name = docker_network.bigagi_network.name
+  }
+  ports {
+    internal = 3000
+    external = 3001
+  }
 }

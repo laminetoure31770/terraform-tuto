@@ -1,3 +1,6 @@
 db_user     = "bigagi"
 db_password = "supersecret"
 db_name     = "bigagidb"
+image_name      = "bigagi-custom"
+container_name  = "terraforme-agent"
+app_name        = "Terraforme Agent"
