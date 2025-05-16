@@ -8,7 +8,7 @@ terraform {
   required_version = ">= 1.3.0"
 }
 
-provider "docker" {
+provider "docker" "this" {
    host = "unix:///var/run/docker.sock"
 }
 
@@ -19,9 +19,8 @@ module "network" {
 
 module "postgres" {
   source = "./modules/postgres"
-  provider = {
-    source  = "registry.terraform.io/kreuzwerker/docker"
-    version = "3.5.0"
+  providers = {
+    docker  = provider.docker.this
   }
   network_name = module.network.network_name
   db_user     = var.db_user
@@ -31,9 +30,8 @@ module "postgres" {
 
 module "bigagi" {
   source = "./modules/bigagi"
-  provider = {
-    source  = "registry.terraform.io/kreuzwerker/docker"
-    version = "3.5.0"
+  providers = {
+    docker  = provider.docker.this
   }
   network_name    = module.network.network_name
   db_user         = var.db_user
