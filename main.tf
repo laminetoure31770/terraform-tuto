@@ -19,7 +19,10 @@ module "network" {
 
 module "postgres" {
   source = "./modules/postgres"
-  provider = docker
+  provider = {
+    source  = "registry.terraform.io/kreuzwerker/docker"
+    version = "3.5.0"
+  }
   network_name = module.network.network_name
   db_user     = var.db_user
   db_password = var.db_password
